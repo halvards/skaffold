@@ -98,6 +98,7 @@ func (b *Builder) runBuildForArtifact(ctx context.Context, out io.Writer, a *lat
 		// + Either to build the image,
 		// + Or to docker load it.
 		// Let's fail fast if Docker is not available
+		// TODO(halvards) Docker isn't required for Jib and Ko when pushing to a registry
 		if _, err := b.localDocker.ServerVersion(ctx); err != nil {
 			return "", err
 		}

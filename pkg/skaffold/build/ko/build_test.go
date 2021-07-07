@@ -33,9 +33,6 @@ import (
 	"github.com/GoogleContainerTools/skaffold/testutil"
 )
 
-// koImportPath is the import path of this package, with the ko scheme prefix.
-const koImportPath = "ko://github.com/GoogleContainerTools/skaffold/pkg/skaffold/build/ko"
-
 func TestBuildKoImages(t *testing.T) {
 	tests := []struct {
 		description         string
@@ -47,23 +44,23 @@ func TestBuildKoImages(t *testing.T) {
 		workspace           string
 	}{
 		{
-			description:         "simple image name in config and sideload image",
+			description:         "simple image name and sideload image",
 			ref:                 "gcr.io/project-id/test-app1:testTag",
-			imageID:             "imageID",
+			imageID:             "imageID1",
 			pushImages:          false,
-			importpath:          koImportPath,
+			importpath:          "ko://github.com/GoogleContainerTools/skaffold/pkg/skaffold/build/ko",
 			imageNameFromConfig: "test-app1",
 		},
 		{
-			description:         "ko import path used in image name config and sideload image",
+			description:         "ko import path image name and sideload image",
 			ref:                 "gcr.io/project-id/example.com/myapp:myTag",
-			imageID:             "imageID",
+			imageID:             "imageID2",
 			pushImages:          false,
 			importpath:          "ko://example.com/myapp",
 			imageNameFromConfig: "ko://example.com/myapp",
 		},
 		{
-			description:         "simple image name in config and push image",
+			description:         "simple image name and push image",
 			ref:                 "gcr.io/project-id/test-app2:testTag",
 			imageID:             "testTag",
 			pushImages:          true,
@@ -71,12 +68,39 @@ func TestBuildKoImages(t *testing.T) {
 			imageNameFromConfig: "test-app2",
 		},
 		{
-			description:         "ko import path used in image name config and push image",
+			description:         "ko import path image name and push image",
 			ref:                 "gcr.io/project-id/example.com/myapp:myTag",
 			imageID:             "myTag",
 			pushImages:          true,
 			importpath:          "ko://example.com/myapp",
 			imageNameFromConfig: "ko://example.com/myapp",
+		},
+		{
+			description:         "workspace is not cwd",
+			ref:                 "gcr.io/project-id/example.com/test-app3:myTag",
+			imageID:             "imageID3",
+			pushImages:          false,
+			importpath:          "ko://github.com/GoogleContainerTools/skaffold/pkg/skaffold/build/docker",
+			imageNameFromConfig: "test-app3",
+			workspace:           "../docker",
+		},
+		{
+			description:         "ko import path image name and workspace is not cwd",
+			ref:                 "gcr.io/project-id/example.com/test-app4:myTag",
+			imageID:             "imageID4",
+			pushImages:          false,
+			importpath:          "ko://github.com/GoogleContainerTools/skaffold/pkg/skaffold/build/docker",
+			imageNameFromConfig: "ko://github.com/GoogleContainerTools/skaffold/pkg/skaffold/build/docker",
+			workspace:           "../docker",
+		},
+		{
+			description:         "ko import path image name and workspace is not cwd and import path is subdirectory of cwd",
+			ref:                 "gcr.io/project-id/example.com/test-app5:myTag",
+			imageID:             "imageID5",
+			pushImages:          false,
+			importpath:          "ko://github.com/GoogleContainerTools/skaffold/pkg/skaffold/build/docker",
+			imageNameFromConfig: "ko://github.com/GoogleContainerTools/skaffold/pkg/skaffold/build/docker",
+			workspace:           "..",
 		},
 	}
 	for _, test := range tests {
@@ -84,12 +108,12 @@ func TestBuildKoImages(t *testing.T) {
 			b := stubKoArtifactBuilder(test.ref, test.imageID, test.pushImages, test.importpath)
 
 			artifact := &latestV1.Artifact{
-				ImageName: test.imageNameFromConfig,
 				ArtifactType: latestV1.ArtifactType{
 					KoArtifact: &latestV1.KoArtifact{},
 				},
-				Workspace:    test.workspace,
 				Dependencies: []*latestV1.ArtifactDependency{},
+				ImageName:    test.imageNameFromConfig,
+				Workspace:    test.workspace,
 			}
 
 			var outBuffer bytes.Buffer

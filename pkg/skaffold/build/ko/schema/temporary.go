@@ -20,11 +20,11 @@ package schema
 
 // KoArtifact builds images using [ko](https://github.com/google/ko).
 type KoArtifact struct {
-	// BaseImage overrides the default ko base image.
+	// BaseImage overrides the default ko base image (`gcr.io/distroless/static:nonroot`).
 	// Corresponds to, and overrides, the `defaultBaseImage` in `.ko.yaml`.
 	BaseImage string `yaml:"fromImage,omitempty"`
 
-	// Dependencies are the file dependencies that skaffold should watch for both rebuilding and file syncing for this artifact.
+	// Dependencies are the file dependencies that Skaffold should watch for both rebuilding and file syncing for this artifact.
 	Dependencies *KoDependencies `yaml:"dependencies,omitempty"`
 
 	// Labels are key-value string pairs to add to the image config.
@@ -33,7 +33,7 @@ type KoArtifact struct {
 
 	// Platforms is the list of platforms to build images for. Each platform
 	// is of the format `os[/arch[/variant]]`, e.g., `linux/amd64`.
-	// By default, the ko builder builds for `all` platforms supported by the
+	// Defaults to `all` to build for all platforms supported by the
 	// base image.
 	Platforms []string `yaml:"platforms,omitempty"`
 }

@@ -18,6 +18,7 @@ package ko
 
 import (
 	"github.com/google/go-containerregistry/pkg/name"
+	"github.com/google/go-containerregistry/pkg/v1/daemon"
 	"github.com/google/ko/pkg/commands"
 	"github.com/google/ko/pkg/commands/options"
 	"github.com/google/ko/pkg/publish"
@@ -26,26 +27,27 @@ import (
 )
 
 func (b *Builder) newKoPublisher(ref string) (publish.Interface, error) {
-	po, err := publishOptions(ref, b.pushImages)
+	po, err := publishOptions(ref, b.pushImages, b.localDocker.RawClient())
 	if err != nil {
 		return nil, err
 	}
 	return commands.NewPublisher(po)
 }
 
-func publishOptions(ref string, pushImages bool) (*options.PublishOptions, error) {
+func publishOptions(ref string, pushImages bool, dockerClient daemon.Client) (*options.PublishOptions, error) {
 	imageRef, err := name.ParseReference(ref)
 	if err != nil {
 		return nil, err
 	}
 	imageNameWithoutTag := imageRef.Context().Name()
 	return &options.PublishOptions{
-		Bare:        true,
-		DockerRepo:  imageNameWithoutTag,
-		Local:       !pushImages,
-		LocalDomain: imageNameWithoutTag,
-		Push:        pushImages,
-		Tags:        []string{imageRef.Identifier()},
-		UserAgent:   version.UserAgentWithClient(),
+		Bare:         true,
+		DockerClient: dockerClient,
+		DockerRepo:   imageNameWithoutTag,
+		Local:        !pushImages,
+		LocalDomain:  imageNameWithoutTag,
+		Push:         pushImages,
+		Tags:         []string{imageRef.Identifier()},
+		UserAgent:    version.UserAgentWithClient(),
 	}, nil
 }

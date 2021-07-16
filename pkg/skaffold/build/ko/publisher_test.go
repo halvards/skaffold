@@ -48,10 +48,14 @@ func TestPublishOptions(t *testing.T) {
 	}
 	for _, test := range tests {
 		testutil.Run(t, test.description, func(t *testutil.T) {
-			po, err := publishOptions(test.ref, test.pushImages)
+			dockerClient := fakeDockerAPIClient(test.ref, "imageID")
+			po, err := publishOptions(test.ref, test.pushImages, dockerClient)
 			t.CheckNoError(err)
 			if !po.Bare || po.BaseImportPaths || po.PreserveImportPaths {
 				t.Errorf("use ko's Bare naming option as it allow for arbitrary image names")
+			}
+			if po.DockerClient != dockerClient {
+				t.Errorf("use provided docker client")
 			}
 			if test.pushImages && po.DockerRepo != test.repo {
 				t.Errorf("wanted DockerRepo (%q), got (%q)", test.repo, po.DockerRepo)
@@ -73,4 +77,8 @@ func TestPublishOptions(t *testing.T) {
 			}
 		})
 	}
+}
+
+func fakeDockerAPIClient(ref string, imageID string) *testutil.FakeAPIClient {
+	return (&testutil.FakeAPIClient{}).Add(ref, imageID)
 }

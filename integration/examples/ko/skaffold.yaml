@@ -17,4 +17,6 @@ kind: Config
 build:
   artifacts:
   - image: skaffold-ko
+    # The ko builder is not yet available.
+    # Please follow the release notes to see when the feature is ready.
     ko: {}
